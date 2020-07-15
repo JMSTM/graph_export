@@ -1,0 +1,94 @@
+<html>
+<head>
+    <script src="./chart.bundle.min.js" type="application/javascript"></script>
+<!--    <script type="module" src="./datas.js" type="application/javascript"></script>-->
+    <script src="moment-with-locales.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+</head>
+<body>
+<canvas id="speedGraph" style=width:100%;" height="350"></canvas>
+<canvas id="speedGraphQA" style=width:100%;" height="350"></canvas>
+
+<div style="margin:50px 50px;">
+    <div style="position:relative;height:30px;margin-left:-1.5%;">
+        <div class="sliderTick" style="position: absolute; left:4.17%">1AM</div>
+        <div class="sliderTick" style="position: absolute; left:8.34%">2AM</div>
+        <div class="sliderTick" style="position: absolute; left:12.5%">3AM</div>
+        <div class="sliderTick" style="position: absolute; left:16.67%">4AM</div>
+        <div class="sliderTick" style="position: absolute; left:20.83%">5AM</div>
+        <div class="sliderTick" style="position: absolute; left:25%">6AM</div>
+        <div class="sliderTick" style="position: absolute; left:29.17%">7AM</div>
+        <div class="sliderTick" style="position: absolute; left:33.33%">8AM</div>
+        <div class="sliderTick" style="position: absolute; left:37.5%">9AM</div>
+        <div class="sliderTick" style="position: absolute; left:41.67%">10AM</div>
+        <div class="sliderTick" style="position: absolute; left:45.83%">11AM</div>
+        <div class="sliderTick" style="position: absolute; left:50%">12PM</div>
+        <div class="sliderTick" style="position: absolute; left:54.17%">1PM</div>
+        <div class="sliderTick" style="position: absolute; left:58.33%">2PM</div>
+        <div class="sliderTick" style="position: absolute; left:62.5%">3PM</div>
+        <div class="sliderTick" style="position: absolute; left:66.67%">4PM</div>
+        <div class="sliderTick" style="position: absolute; left:70.83%">5PM</div>
+        <div class="sliderTick" style="position: absolute; left:75%">6PM</div>
+        <div class="sliderTick" style="position: absolute; left:79.17%">7PM</div>
+        <div class="sliderTick" style="position: absolute; left:83.33%">8PM</div>
+        <div class="sliderTick" style="position: absolute; left:87.5%">9PM</div>
+        <div class="sliderTick" style="position: absolute; left:91.67%">10PM</div>
+        <div class="sliderTick" style="position: absolute; left:95.83%">11PM</div>
+    </div>
+
+    <div>
+        <div id="slider-range" style="clear:both;"></div>
+    </div>
+</div>
+
+</body>
+
+<script type="text/javascript">
+
+</script>
+
+<style>
+    .sliderTick {
+        text-align: center;
+        font-family: 'Verdana';
+        font-size:12px;
+    }
+
+</style>
+<input type="submit" id="buttonNow" value="NOW">
+</html>
+
+<script type="module">
+    $(() => {
+        $('#buttonNow').click(() => {
+            const now = new Date();
+
+            $("#slider-range").slider("values" , 0, now.getHours()*60+now.getMinutes() - 60);
+            $("#slider-range").slider("values" , 1, now.getHours()*60+now.getMinutes() + 60);
+            refreshGraph();
+        });
+    });
+    import {graphs, makeGraph, getRealTime, refreshGraph} from "./datas.js";
+    setInterval(async () => {
+        const todayDataSet = await getRealTime();
+        // todayDataSet: {prodDelay: dataSetProdDelay, prodJobs: dataSetProdJobs}
+        for (let type of ['prodDelay', 'prodJobs'])
+        {
+            console.log('Type:', type, Object.keys(todayDataSet[type]));
+            Object.keys(todayDataSet[type]).forEach(keyDay =>
+            {
+                // console.log(graphs.prod.data.datasets.find(dataset => dataset.day == keyDay).data.length);
+                console.log('look for', keyDay, type);
+                graphs.prod.data.datasets
+                    .find(dataset => {
+                        console.log("Testing ", dataset.day, dataset.datatype);
+                        return dataset.day == keyDay && dataset.datatype == type;
+                    }).data = todayDataSet[type][keyDay];
+                // console.log(graphs.prod.data.datasets.find(dataset => dataset.day == keyDay).data.length);
+                graphs.prod.update();
+            });
+        }
+    }, 5000);
+</script>
